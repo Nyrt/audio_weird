@@ -68,13 +68,13 @@ SynthDef(\delay, {
 // [delay, decay]
 ~delay_params = Bus.control(s, 2);
 
-~fx_3.scope();
+~input.scope();
 
 // t = Synth.new(\shiftCtrl, [out:p]);
 
-m = Synth.new(\mic, [in:1, out:~input]);
+m = Synth.new(\mic, [in:0, out:~input]);
 
-~gated = Synth.after(m, \noisegate, [in: ~input, out:  ~fx_1, thresh: 0.2]);
+~gated = Synth.after(m, \noisegate, [in: ~input, out:  ~fx_1, thresh: 0.0]);
 
 ~h1 = Synth.after(~gated, \shifter, [in:  ~fx_1, out: ~fx_2, ratio: ~h1_pitch]);
 
