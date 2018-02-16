@@ -4,16 +4,18 @@
 
 (
 SynthDef(\shifter, {
-	arg in=1, out=0, ratio, grainsize=0.1, pitchdispertion=0, timedispersion=0.004, rate, gate;
-	var sig, env;
+	arg in=1, out=0, ratio=0, grainsize=0.1, pitchdispertion=0, timedispersion=0.004, rate, gate, amp = 1, detune = 0;
+	var sig, env, pitch;
+	pitch = ratio + detune;
+	pitch.postln;
 	sig = PitchShift.ar(In.ar(in),
 		grainsize,
-		ratio,
+		pitch,
 		pitchdispertion,
 		timedispersion
 	);
 	env = EnvGen.ar(Env.adsr(), gate, doneAction:2);
-	sig = sig * env;
+	sig = sig * env * amp;
 
 	Out.ar(out, sig);
 }).add;
@@ -112,7 +114,7 @@ MIDIdef(\touch, {// press
 	var synth = ~chanMap[channel];
 	if(synth != Nil, {
 		synth.get(\note, {arg note;
-			synth.set(\lfofreq, pressure.linexp(0,127,4,note));
+			synth.set(\amp, pressure.linlin(0,127,0,1));
 		});
 	});
 }, msgType: \touch);
@@ -120,7 +122,8 @@ MIDIdef(\touch, {// press
 MIDIdef(\bend, {// Glide
 	arg bend, channel;
 	var synth = ~chanMap[channel];
-	// if(synth != Nil, {synth.set(\detune, bend/10)});
+	bend = (bend - 8192)/170/24;
+	if(synth != Nil, {synth.set(\detune, bend)});
 }, msgType: \bend);
 
 MIDIdef(\control, {// Slide
@@ -128,15 +131,14 @@ MIDIdef(\control, {// Slide
 	var synth = ~chanMap[channel];
 	if(synth != Nil, {
 		synth.get(\note, {arg note;
-			synth.set(\lfofreq, value.linexp(0,127,4,note));
+			synth.set(\null, value.linlin(0,127,0.0, 1));
 		});
 	});
 }, msgType: \control);
 );
 
 /*************************** PRESETS ***************************/
-// no delay
-~delay.set(\delay,0);~delay.set(\decay,0);
+
 
 // Add delay
 ~delay.set(\delay,2);~delay.set(\decay,0);
@@ -145,4 +147,5 @@ MIDIdef(\control, {// Slide
 ~delay.set(\delay,0.5);~delay.set(\decay,10);
 
 
-
+// no delay
+~delay.set(\delay,0);~delay.set(\decay,0);
