@@ -7,7 +7,7 @@ SynthDef(\shifter, {
 	arg in=1, out=0, ratio, grainsize=0.1, pitchdispertion=0, timedispersion=0.004, rate;
 	var sig = PitchShift.ar(In.ar(in),
 		grainsize,
-		In.kr(ratio, 1),
+		ratio,
 		pitchdispertion,
 		timedispersion
 	);
@@ -46,9 +46,8 @@ SynthDef(\stereo, {
 
 (
 SynthDef(\delay, {
-	arg in, out, params;
-	var delay = In.kr(params, 2);
-	var sig = AllpassC.ar(In.ar(in), 5, delay[0], delay[1]);
+	arg in, out, delay, decay;
+	var sig = AllpassC.ar(In.ar(in), 5, delay, decay);
 	Out.ar(out, sig);
 }).add;
 );
@@ -61,10 +60,6 @@ SynthDef(\delay, {
 
 ~fx_3 = Bus.audio(s, 1);
 
-~h1_pitch = Bus.control(s, 1);
-
-~h2_pitch = Bus.control(s, 1);
-
 // [delay, decay]
 ~delay_params = Bus.control(s, 2);
 
@@ -76,11 +71,11 @@ m = Synth.new(\mic, [in:0, out:~input]);
 
 ~gated = Synth.after(m, \noisegate, [in: ~input, out:  ~fx_1, thresh: 0.0]);
 
-~h1 = Synth.after(~gated, \shifter, [in:  ~fx_1, out: ~fx_2, ratio: ~h1_pitch]);
+~h1 = Synth.after(~gated, \shifter, [in:  ~fx_1, out: ~fx_2, ratio: 0]);
 
-~h2 = Synth.after(~h1, \shifter, [in:  ~fx_1, out: ~fx_2, ratio: ~h2_pitch]);
+~h2 = Synth.after(~h1, \shifter, [in:  ~fx_1, out: ~fx_2, ratio: 0]);
 
-~delay = Synth.after(~h2, \delay, [in:~fx_2, out:~fx_3, params:~delay_params]);
+~delay = Synth.after(~h2, \delay, [in:~fx_2, out:~fx_3, delay:0, decay:0]);
 
  ~stereo_out = Synth.after(~delay, \stereo, [in:~fx_3]);
 
@@ -88,18 +83,23 @@ m = Synth.new(\mic, [in:0, out:~input]);
 
 /*************************** PRESETS ***************************/
 // Octaves
-~h1_pitch.set(-12.midiratio);~h2_pitch.set(12.midiratio);~delay_params.set(0, 0);
 
-// Major chord, no inversion
-~h1_pitch.set(4.midiratio);~h2_pitch.set(7.midiratio);~delay_params.set(0, 0);
+~h1.set(\ratio,-12.midiratio);~h1.set(\ratio,12.midiratio);
 
-// Minor chord, 1st inversion
-~h1_pitch.set(-5.midiratio);~h2_pitch.set(3.midiratio);~delay_params.set(0, 0);
 
+//
+// // Major chord, no inversion
+~h1.set(\ratio,4.midiratio);~h1.set(\ratio,7.midiratio);
+
+// // Minor chord, 1st inversion
+~h1.set(\ratio,-5.midiratio);~h1.set(\ratio,3.midiratio);
+
+// no delay
+~delay.set(\delay,0);~delay.set(\decay,0);
 
 // Add delay
-~delay_params.set(2, 0);
+~delay.set(\delay,2);~delay.set(\decay,0);
 
 // Add delay with feedback
-~delay_params.set(0.5, 10);
+~delay.set(\delay,0.5);~delay.set(\decay,10);
 
