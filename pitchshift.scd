@@ -84,15 +84,15 @@ m = Synth.new(\mic, [in:0, out:~input]);
 /*************************** PRESETS ***************************/
 // Octaves
 
-~h1.set(\ratio,-12.midiratio);~h1.set(\ratio,12.midiratio);
+~h1.set(\ratio,0.midiratio);~h2.set(\ratio,0.midiratio);
 
 
 //
 // // Major chord, no inversion
-~h1.set(\ratio,4.midiratio);~h1.set(\ratio,7.midiratio);
+~h1.set(\ratio,4.midiratio);~h2.set(\ratio,7.midiratio);
 
 // // Minor chord, 1st inversion
-~h1.set(\ratio,-5.midiratio);~h1.set(\ratio,3.midiratio);
+~h1.set(\ratio,-5.midiratio);~h2.set(\ratio,3.midiratio);
 
 // no delay
 ~delay.set(\delay,0);~delay.set(\decay,0);
